@@ -242,19 +242,25 @@ $app->get('/identifikasi_kota/{provinsi}/{id_tanaman}', function ($request,$resp
             
             $hasil['nama_tanaman'] = $tanaman['nama_tanaman'];
 
-            $daftar_kota = [];
+            
             foreach($con->query($sql_kota) as $nama_kota){
-              
-              array_push($daftar_kota, $nama_kota['kota_atau_kabupaten']);
-
+                            
+              $penyakit_per_kota['nama_kota'] = $nama_kota['kota_atau_kabupaten'];
+              array_push($hasil, $penyakit_per_kota);                  
+                
               $daftar_penyakit = [];
               foreach($con->query($sql_penyakit.'"'.$nama_kota['kota_atau_kabupaten'].'"') as $penyakit){
                 array_push($daftar_penyakit, $penyakit['nama_penyakit']) ;
-              }
 
+              }
+          
+            
             $penyakit_per_kota['nama_penyakit'] =$daftar_penyakit; 
-            $hasil['data'] = $penyakit_per_kota;  
+            $hasil_provinsi['data'] = $penyakit_per_kota;
+
+            
             }
+
 
           }
 
