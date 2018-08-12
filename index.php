@@ -145,13 +145,24 @@ $app->delete('/user/{id}', function ($request,$response) {
 $app->get('/koleksi', function ($request,$response) {
    try{
        $con = $this->db;
-       $sql = "SELECT DiSTINCT tanaman.nama_tanaman, penyakit.nama_penyakit, penyakit.kategori FROM identifikasi JOIN tanaman on identifikasi.id_tanaman=tanaman.id_tanaman JOIN penyakit on identifikasi.id_penyakit=penyakit.id_penyakit order by tanaman.nama_tanaman";
-       $result = null;
-       foreach ($con->query($sql) as $row) {
-           $result[] = $row;
+       $sql_tanaman_yang_diidentifikasi = "SELECT DISTINCT tanaman.nama_tanaman FROM identifikasi JOIN tanaman on identifikasi.id_tanaman=tanaman.id_tanaman";
+
+       $sql_penyakit_dari_tanaman = "SELECT DISTINCT penyakit.nama_penyakit, penyakit.kategori FROM identifikasi JOIN tanaman on identifikasi.id_tanaman=tanaman.id_tanaman JOIN penyakit on identifikasi.id_penyakit=penyakit.id_penyakit WHERE tanaman.nama_tanaman=";
+
+       $daftar_tanaman_yang_diidentifikasi = [];
+       foreach ($con->query($sql_tanaman_yang_diidentifikasi) as $row) {
+
+            $data_penyakit = [];
+            foreach ($con->query($sql_penyakit_dari_tanaman.'"'.$row['nama_tanaman'].'"') as $penyakit) {
+              $data_penyakit[] = $penyakit;
+            }
+
+            $row['data_penyakit'] = $data_penyakit;  
+           array_push($daftar_tanaman_yang_diidentifikasi, $row);
+
        }
-       if($result){
-           return $response->withJson(array('status' => 'true','result'=>$result),200);
+       if($daftar_tanaman_yang_diidentifikasi){
+           return $response->withJson(array('status' => 'true','result'=>$daftar_tanaman_yang_diidentifikasi),200);
        }else{
            return $response->withJson(array('status' => 'Not Found'),422);
        }
@@ -166,21 +177,20 @@ $app->get('/koleksi', function ($request,$response) {
 // tampilin full identifikasi  
 $app->get('/identifikasi', function ($request,$response) {
    try{
-       $con = $this->db;
-       $sql = "SELECT lokasi.provinsi, lokasi.kota_atau_kabupaten, tanaman.nama_tanaman, penyakit.nama_penyakit FROM identifikasi join tanaman on identifikasi.id_tanaman=tanaman.id_tanaman join penyakit on identifikasi.id_penyakit=penyakit.id_penyakit join lokasi on identifikasi.id_lokasi = lokasi.id_lokasi order by identifikasi.id_lokasi, tanaman.nama_tanaman, penyakit.nama_penyakit";
-       $result = null;
-       foreach ($con->query($sql) as $row) {
-           $result[] = $row;
-       }
-       if($result){
-           return $response->withJson(array('status' => 'true','result'=>$result),200);
-       }else{
-           return $response->withJson(array('status' => 'Not Found'),422);
-       }
+       $command = escapeshellcmd("Modus.ipynb");
+       $output = shell_exec("Modus.ipynb");
+       var_dump($output);
+       //return $response ->withJson(array('result'=>$output));
+       
+       //if($output){
+       //    return $response->withJson(array('status' => 'true','result'=>$output),200);
+       //}else{
+       //    return $response->withJson(array('status' => 'Not Found'),422);
+       //}
               
    }
    catch(\Exception $ex){
-       return $response->withJson(array('error' => $ex->getMessage()),422);
+       //return $response->withJson(array('error' => $ex->getMessage()),422);
    }
    
 });
@@ -229,8 +239,6 @@ $app->get('/identifikasi_kota/{provinsi}/{id_tanaman}', function ($request,$resp
    catch(\Exception $ex){
        return $response->withJson(array('error' => $ex->getMessage()),422);
    }
-
-   
 });
 
 
