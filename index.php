@@ -1,4 +1,5 @@
 <?php
+header("Access-Control-Allow-Origin: *");
 require 'vendor/autoload.php';
 include 'config.php';
 $app = new Slim\App(["settings" => $config]);
