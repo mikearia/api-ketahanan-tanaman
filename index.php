@@ -157,7 +157,7 @@ $app->get('/koleksi', function ($request,$response) {
             }
 
             $row['data_penyakit'] = $data_penyakit;  
-           array_push($daftar_tanaman_yang_diidentifikasi, $row);
+            array_push($daftar_tanaman_yang_diidentifikasi, $row);
 
        }
        if($daftar_tanaman_yang_diidentifikasi){
@@ -223,13 +223,46 @@ $app->get('/identifikasi_kota/{provinsi}/{id_tanaman}', function ($request,$resp
        $provinsi = $request->getAttribute('provinsi');
        $id  = $request->getAttribute('id_tanaman');
        $con = $this->db;
-       $sql = "SELECT lokasi.provinsi, lokasi.kota_atau_kabupaten, tanaman.nama_tanaman, penyakit.nama_penyakit FROM identifikasi join tanaman on identifikasi.id_tanaman=tanaman.id_tanaman join penyakit on identifikasi.id_penyakit=penyakit.id_penyakit join lokasi on identifikasi.id_lokasi = lokasi.id_lokasi where lokasi.provinsi='$provinsi' and identifikasi.id_tanaman='$id'";
-       $result = null;
-       foreach($con->query($sql) as $row){
-          $result[] = $row;
-       }
-       if($result){
-           return $response->withJson(array('status' => 'true','result'=> $result),200);
+
+       $sql_provinsi = "SELECT DISTINCT lokasi.provinsi FROM identifikasi join lokasi on identifikasi.id_lokasi = lokasi.id_lokasi join tanaman on tanaman.id_tanaman=identifikasi.id_tanaman where lokasi.provinsi='".$provinsi."' and identifikasi.id_tanaman='".$id."'";
+       
+       $sql_tanaman = "SELECT DISTINCT tanaman.nama_tanaman FROM identifikasi JOIN tanaman ON identifikasi.id_tanaman = tanaman.id_tanaman join lokasi on identifikasi.id_lokasi=lokasi.id_lokasi where lokasi.provinsi='".$provinsi."' and identifikasi.id_tanaman='".$id."'";
+
+       $sql_kota = "SELECT DISTINCT lokasi.kota_atau_kabupaten FROM identifikasi join lokasi on identifikasi.id_lokasi = lokasi.id_lokasi join tanaman on identifikasi.id_tanaman=tanaman.id_tanaman where lokasi.provinsi='".$provinsi."' and identifikasi.id_tanaman='".$id."'";
+
+       $sql_penyakit = "SELECT DISTINCT penyakit.nama_penyakit FROM identifikasi join penyakit ON identifikasi.id_penyakit = penyakit.id_penyakit JOIN lokasi on identifikasi.id_lokasi = lokasi.id_lokasi where lokasi.kota_atau_kabupaten=";
+       
+       $result_provinsi_tanaman = [];
+       // return $sql_provinsi;
+       
+       foreach ($con->query($sql_provinsi) as $nama_provinsi) {
+
+          $hasil['nama_provinsi'] = $nama_provinsi['provinsi'];
+          foreach ($con->query($sql_tanaman) as $tanaman) {
+            
+            $hasil['nama_tanaman'] = $tanaman['nama_tanaman'];
+
+            foreach($con->query($sql_kota) as $nama_kota){
+              
+              $penyakit_per_kota['nama_kota'] = $nama_kota['kota_atau_kabupaten'];
+
+              $daftar_penyakit = [];
+              foreach($con->query($sql_penyakit.'"'.$nama_kota['kota_atau_kabupaten'].'"') as $penyakit){
+                array_push($daftar_penyakit, $penyakit['nama_penyakit']) ;
+              }
+
+            $penyakit_per_kota['nama_penyakit'] =$daftar_penyakit; 
+            $hasil['data'] = $penyakit_per_kota;  
+            }
+
+          }
+
+          array_push($result_provinsi_tanaman, $hasil);  
+        } 
+
+
+       if($result_provinsi_tanaman){
+           return $response->withJson(array('status' => 'true','result'=> $result_provinsi_tanaman),200);
        }else{
            return $response->withJson(array('status' => 'Tanaman Not Found'),422);
        }
