@@ -1,6 +1,7 @@
 <?php
 require 'vendor/autoload.php';
 include 'config.php';
+header("Access-Control-Allow-Origin: *");
 $app = new Slim\App(["settings" => $config]);
 //Handle Dependencies
 $container = $app->getContainer();
