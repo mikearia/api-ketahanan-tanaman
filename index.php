@@ -176,16 +176,17 @@ $app->get('/koleksi', function ($request,$response) {
 // tampilin full identifikasi  
 $app->get('/identifikasi', function ($request,$response) {
    try{
-       $command = escapeshellcmd("Modus.ipynb");
-       $output = shell_exec("Modus.ipynb");
-       var_dump($output);
-       //return $response ->withJson(array('result'=>$output));
-       
-       //if($output){
-       //    return $response->withJson(array('status' => 'true','result'=>$output),200);
-       //}else{
-       //    return $response->withJson(array('status' => 'Not Found'),422);
-       //}
+       $con = $this->db;
+       $sql = "SELECT lokasi.provinsi, lokasi.kota_atau_kabupaten, tanaman.nama_tanaman, penyakit.nama_penyakit FROM identifikasi JOIN tanaman ON identifikasi.id_tanaman=tanaman.id_tanaman JOIN penyakit ON identifikasi.id_penyakit=penyakit.id_penyakit JOIN lokasi ON identifikasi.id_lokasi=lokasi.id_lokasi";
+       $result = null;
+       foreach ($con->query($sql) as $row) {
+           $result[] = $row;
+       }
+       if($result){
+           return $response->withJson(array('result'=>$result),200);
+       }else{
+           return $response->withJson(array('status' => 'Not Found'),422);
+       }
               
    }
    catch(\Exception $ex){
@@ -218,10 +219,11 @@ $app->get('/identifikasi_provinsi/{id}', function ($request,$response) {
    
 });
 
-$app->get('/identifikasi_kota/{provinsi}/{id_tanaman}', function ($request,$response) {
+//{provinsi}/{id_tanaman}
+$app->post('/identifikasi_kota/', function ($request,$response) {
    try{
-       $provinsi = $request->getAttribute('provinsi');
-       $id  = $request->getAttribute('id_tanaman');
+       $provinsi = $request->getParam('provinsi');
+       $id  = $request->getParam('id_tanaman');
        $con = $this->db;
 
        $sql_provinsi = "SELECT DISTINCT lokasi.provinsi FROM identifikasi join lokasi on identifikasi.id_lokasi = lokasi.id_lokasi join tanaman on tanaman.id_tanaman=identifikasi.id_tanaman where lokasi.provinsi='".$provinsi."' and identifikasi.id_tanaman='".$id."'";
@@ -234,7 +236,8 @@ $app->get('/identifikasi_kota/{provinsi}/{id_tanaman}', function ($request,$resp
        
        $result_provinsi_tanaman = [];
        // return $sql_provinsi;
-       
+      
+      
        foreach ($con->query($sql_provinsi) as $nama_provinsi) {
 
           $hasil['nama_provinsi'] = $nama_provinsi['provinsi'];
@@ -242,29 +245,26 @@ $app->get('/identifikasi_kota/{provinsi}/{id_tanaman}', function ($request,$resp
             
             $hasil['nama_tanaman'] = $tanaman['nama_tanaman'];
 
-            
+             $temp = [];
+             $temp2 = [];
             foreach($con->query($sql_kota) as $nama_kota){
                             
-              $penyakit_per_kota['nama_kota'] = $nama_kota['kota_atau_kabupaten'];
-              array_push($hasil, $penyakit_per_kota);                  
+              $temp['nama_kota'] = $nama_kota['kota_atau_kabupaten'];
+              //array_push($temp['nama_kota'], $nama_kota['kota_atau_kabupaten']);                                
                 
               $daftar_penyakit = [];
               foreach($con->query($sql_penyakit.'"'.$nama_kota['kota_atau_kabupaten'].'"') as $penyakit){
                 array_push($daftar_penyakit, $penyakit['nama_penyakit']) ;
-
               }
-          
             
-            $penyakit_per_kota['nama_penyakit'] =$daftar_penyakit; 
-            $hasil_provinsi['data'] = $penyakit_per_kota;
-
-            
+              $temp['nama_penyakit'] = $daftar_penyakit;
+              $temp2[] = $temp;
             }
 
-
           }
+          $hasil['data'] = array($temp2) ;
 
-          array_push($result_provinsi_tanaman, $hasil);  
+          $result_provinsi_tanaman = $hasil;
         } 
 
 
