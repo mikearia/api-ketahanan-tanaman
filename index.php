@@ -221,11 +221,11 @@ $app->get('/identifikasi_provinsi/{id}', function ($request,$response) {
 });
 
 //{provinsi}/{id_tanaman}
-$app->post('/identifikasi_kota/', function ($request,$response) {
-   try{
-       $provinsi = $request->getParam('provinsi');
-       $id  = $request->getParam('id_tanaman');
-       $con = $this->db;
+$app->get('/identifikasi_kota/{prov}/{tanaman}', function ($request,$response) {
+  try{
+      $provinsi = $request->getAttribute('prov');//$request->getParam('provinsi');
+      $id  = $request->getAttribute('tanaman');//$request->getParam('id_tanaman');
+      $con = $this->db;
 
        $sql_provinsi = "SELECT DISTINCT lokasi.provinsi FROM identifikasi join lokasi on identifikasi.id_lokasi = lokasi.id_lokasi join tanaman on tanaman.id_tanaman=identifikasi.id_tanaman where lokasi.provinsi='".$provinsi."' and identifikasi.id_tanaman='".$id."'";
        

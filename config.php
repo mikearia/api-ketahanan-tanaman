@@ -4,7 +4,7 @@ $config = [
      'servername' =>'localhost',
      'username' => 'root',
      'password' => '',
-      'dbname' => 'ketahanan_tanaman',
-      // 'dbname' => 'baktemap'
+      // 'dbname' => 'ketahanan_tanaman',
+      'dbname' => 'baktemap'
   ]
 ];
