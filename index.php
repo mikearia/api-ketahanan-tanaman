@@ -306,7 +306,7 @@ $app->get('/trial', function ($request,$response) {
 $app->get('/kluster_trial', function ($request,$response) {
    try{
        $con = $this->db;
-       $sql = "SELECT id_trial, tanggal, persen_rc_hidup, persen_sc_hidup FROM trial";
+       $sql = "SELECT id_trial, MONTH(tanggal) as bulan, persen_rc_hidup, persen_sc_hidup FROM trial";
        $result = null;
        foreach ($con->query($sql) as $row) {
            $result[] = $row;
