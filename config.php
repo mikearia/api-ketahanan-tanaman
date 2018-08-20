@@ -1,10 +1,10 @@
 <?php
 $config = [
   'db' => [
-     'servername' =>'localhost',
+     'servername' =>'ramdhanrizki.net',
      'username' => 'root',
-     'password' => '',
-      // 'dbname' => 'ketahanan_tanaman',
-      'dbname' => 'baktemap'
+     'password' => 'code@labs',
+      'dbname' => 'ketahanan_tanaman',
+      //'dbname' => 'baktemap'
   ]
 ];
